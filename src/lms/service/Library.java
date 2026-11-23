@@ -1,7 +1,9 @@
-
 package lms.Service;
 
 import lms.Model.*;
+import lms.exception.ItemNotAvailableException;
+import lms.exception.MemberNotFoundException;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -65,7 +67,8 @@ public class Library {
         }
     }
 
-    public void lend(Loanable thing, Member member) {
+    public void lend(Loanable thing, Member member)
+            throws ItemNotAvailableException {
         thing.loan(member);
     }
 
@@ -79,7 +82,6 @@ public class Library {
 
     public void printMembersByActivity() {
         List<Member> sortedMembers = new ArrayList<>(members);
-
         Collections.sort(sortedMembers);
 
         System.out.println("--- Members ranked by activity ---");
@@ -88,6 +90,46 @@ public class Library {
             System.out.println(member.getName() + " (" +
                     member.getBorrowedCount() + " borrowed)");
         }
+    }
+
+    public Member findMember(String memberId) {
+
+        for (Member member : members) {
+            if (member.getMemberId().equals(memberId)) {
+                return member;
+            }
+        }
+
+        throw new MemberNotFoundException(memberId);
+    }
+
+    public LibraryItem findItem(String itemId)
+            throws ItemNotAvailableException {
+
+        for (LibraryItem item : items) {
+            if (item.getId().equals(itemId)) {
+                return item;
+            }
+        }
+
+        throw new ItemNotAvailableException(
+                "No item with id '" + itemId + "'");
+    }
+
+    public void borrowItem(String itemId, String memberId)
+            throws ItemNotAvailableException {
+
+        LibraryItem item = findItem(itemId);
+        Member member = findMember(memberId);
+
+        item.loan(member);
+    }
+
+    public void returnItem(String itemId)
+            throws ItemNotAvailableException {
+
+        LibraryItem item = findItem(itemId);
+        item.returnItem();
     }
 
     public List<LibraryItem> getItems() {
